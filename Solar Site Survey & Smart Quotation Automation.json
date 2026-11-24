@@ -1,0 +1,476 @@
+{
+  "name": "Solar Site Survey & Smart Quotation Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Solar Site Survey Request",
+        "formDescription": "Please submit your details to request a solar site survey and a customized solar quotation.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Customer Name",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Email Address",
+              "fieldType": "email",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Phone Number"
+            },
+            {
+              "fieldLabel": "Property Location",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Property Type",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Residential"
+                  },
+                  {
+                    "option": "Commercial"
+                  },
+                  {
+                    "option": "Industrial"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Monthly Electricity Bill",
+              "fieldType": "number"
+            },
+            {
+              "fieldLabel": "Electricity Consumption"
+            },
+            {
+              "fieldLabel": "Solar Requirement",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "New Solar Installation"
+                  },
+                  {
+                    "option": "Solar System Upgrade"
+                  },
+                  {
+                    "option": "Battery Backup"
+                  },
+                  {
+                    "option": "Consultation"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Additional Details",
+              "fieldType": "textarea"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        0,
+        0
+      ],
+      "id": "450a4c07-a04a-4c1b-9c51-43958341e70a",
+      "name": "On form submission",
+      "webhookId": "1652c2a5-a548-4ed7-be7d-8e642b3a5305"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=={{ JSON.stringify($json, null, 2) }}",
+        "options": {
+          "systemMessage": "You are a professional Solar Energy Consultant AI working for a solar installation company.\n\nAnalyze customer information submitted through the solar site survey form.\n\nYour tasks:\n1. Identify the customer's property type and solar requirement.\n2. Analyze the customer's electricity bill and consumption information.\n3. Understand the customer's solar installation needs.\n4. Recommend the next appropriate step, such as a site survey, consultation, system upgrade, or battery backup assessment.\n5. Identify missing information that the company needs before preparing a final quotation.\n6. Generate a professional, clear, customer-friendly summary.\n7. Never invent solar system sizes, prices, savings, or technical specifications when the necessary information is unavailable.\n8. Clearly state that any solar system recommendation or quotation is preliminary and requires technical verification by the solar engineering team.\n\nReturn your response in the following format:\n\nCUSTOMER SUMMARY:\nSummarize the customer's information.\n\nPROPERTY & REQUIREMENT:\nDescribe the property type and solar requirement.\n\nELECTRICITY ANALYSIS:\nAnalyze the available electricity bill and consumption information.\n\nRECOMMENDED NEXT STEP:\nSuggest the appropriate next step for the company.\n\nMISSING INFORMATION:\nList any information required for a proper technical assessment.\n\nCUSTOMER RESPONSE:\nWrite a professional message acknowledging the customer's request and explaining that the solar team will review their information and contact them regarding the next steps.\n\nKeep your response professional, concise, accurate, and easy to understand."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        224,
+        0
+      ],
+      "id": "7cb4e180-b085-4b05-852e-15ffdf779469",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        16,
+        272
+      ],
+      "id": "7581a6f1-c955-4620-964d-597b0c477b81",
+      "name": "Ollama Chat Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "5wYJTsidZfa6Ywe9",
+          "name": "Ollama account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appaqs7ZSCgl9IZmC",
+          "mode": "list",
+          "cachedResultName": "Solar Customer Management",
+          "cachedResultUrl": "https://airtable.com/appaqs7ZSCgl9IZmC"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblbPcnVaaSh6JrC5",
+          "mode": "list",
+          "cachedResultName": "Solar Leads",
+          "cachedResultUrl": "https://airtable.com/appaqs7ZSCgl9IZmC/tblbPcnVaaSh6JrC5"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Customer Name": "={{ $('On form submission').item.json['Customer Name'] }}",
+            "Phone": "={{ $('On form submission').item.json['Phone Number'] }}",
+            "Property Type": "={{ $('On form submission').item.json['Property Type'] }}",
+            "Monthly Bill": "={{ $('On form submission').item.json['Monthly Electricity Bill'] }}",
+            "Status": "New Lead",
+            "AI Analysis": "={{ $json.output }}",
+            "Email": "={{ $('On form submission').item.json['Email Address'] }}",
+            "Location": "={{ $('On form submission').item.json['Property Location'] }}",
+            "Consumption": "={{ $('On form submission').item.json['Electricity Consumption'] }}",
+            "Solar Requirement": "={{ $('On form submission').item.json['Solar Requirement'] }}",
+            "Additional Details": "={{ $('On form submission').item.json['Additional Details'] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Customer Name",
+              "displayName": "Customer Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Phone",
+              "displayName": "Phone",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Location",
+              "displayName": "Location",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Property Type",
+              "displayName": "Property Type",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Residential",
+                  "value": "Residential"
+                },
+                {
+                  "name": "Commercial",
+                  "value": "Commercial"
+                },
+                {
+                  "name": "Industrial",
+                  "value": "Industrial"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Monthly Bill",
+              "displayName": "Monthly Bill",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Consumption",
+              "displayName": "Consumption",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Solar Requirement",
+              "displayName": "Solar Requirement",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "New Solar Installation",
+                  "value": "New Solar Installation"
+                },
+                {
+                  "name": "Solar System Upgrade",
+                  "value": "Solar System Upgrade"
+                },
+                {
+                  "name": "Battery Backup",
+                  "value": "Battery Backup"
+                },
+                {
+                  "name": "Consultation",
+                  "value": "Consultation"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Additional Details",
+              "displayName": "Additional Details",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "AI Analysis",
+              "displayName": "AI Analysis",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "New Lead",
+                  "value": "New Lead"
+                },
+                {
+                  "name": "Survey Pending",
+                  "value": "Survey Pending"
+                },
+                {
+                  "name": "Contacted",
+                  "value": "Contacted"
+                },
+                {
+                  "name": "Quotation Pending",
+                  "value": "Quotation Pending"
+                },
+                {
+                  "name": "Completed",
+                  "value": "Completed"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        576,
+        0
+      ],
+      "id": "7b557371-74fb-478b-b55e-b690412ef3ec",
+      "name": "Create a record",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "QDQVPlBiF6Uadp16",
+          "name": "Airtable Personal Access Token account 6"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('On form submission').item.json['Email Address'] }}",
+        "subject": "Solar Site Survey Request Received",
+        "message": "=Hello {{ $('On form submission').item.json['Customer Name'] }},  Thank you for submitting your solar site survey request.  We have received your information and our solar team will review your property details, electricity consumption, and solar requirements.  Our team will contact you regarding the next steps for your solar consultation and site survey.  Thank you for choosing us!  Best regards, Solar Customer Support Team",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        800,
+        0
+      ],
+      "id": "1096f17b-76c1-4379-aa72-dfe828215831",
+      "name": "Send a message",
+      "webhookId": "ab423034-86d9-42fa-be17-006cff1ee345",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "VA0IJbApuwkx4dfR",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0CJZU0M2L8",
+          "mode": "id"
+        },
+        "text": "=☀️ *NEW SOLAR CUSTOMER LEAD*\n\n👤 Customer Name: {{ $('On form submission').item.json['Customer Name'] }}\n\n📧 Email: {{ $('On form submission').item.json['Email Address'] }}\n\n📞 Phone: {{ $('On form submission').item.json['Phone Number'] }}\n\n📍 Property Location: {{ $('On form submission').item.json['Property Location'] }}\n\n🏠 Property Type: {{ $('On form submission').item.json['Property Type'] }}\n\n💰 Monthly Electricity Bill: {{ $('On form submission').item.json['Monthly Electricity Bill'] }}\n\n⚡ Electricity Consumption: {{ $('On form submission').item.json['Electricity Consumption'] }}\n\n🔋 Solar Requirement: {{ $('On form submission').item.json['Solar Requirement'] }}\n\n📝 Additional Details: {{ $('On form submission').item.json['Additional Details'] }}\n\n🤖 AI Analysis:\n{{ $('AI Agent').item.json.output }}\n\n📌 Status: New Lead\n\nPlease review this customer request and contact the customer regarding the next steps.",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.7,
+      "position": [
+        1024,
+        0
+      ],
+      "id": "2652945c-8ed5-4143-ad0a-4f888b6897ee",
+      "name": "Send a message1",
+      "webhookId": "1a848ad9-dc20-44a3-9038-f91f21f481a4",
+      "credentials": {
+        "slackApi": {
+          "id": "GpGqpaNPjuXQtb6V",
+          "name": "Slack account 4"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Create a record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a record": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "5a41ceef-7dc8-460d-a345-635b7ec21ac8",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "6e09abedfd28e85ac261ad9898070b7bd18a6bacefa80cf22df0369b64fe23b9"
+  },
+  "nodeGroups": [],
+  "id": "6OYynUbwHbvs6qDC",
+  "tags": []
+}
